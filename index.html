@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Countdown to Blackboard Original Retirement</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      flex-direction: column;
+    }
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 { font-size: 2rem; margin-bottom: 1rem; }
+    h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
+    #countdown1, #countdown2 {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #222;
+      margin-bottom: 1rem;
+    }
+    .logos {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .logos img {
+      height: 60px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <div class="logos">
+    <!-- only Blackboard logo now -->
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Blackboard_logo.png" alt="Blackboard Logo">
+  </div>
+
+  <div class="container">
+    <h1>Countdown to Blackboard Original Retirement</h1>
+    <h2>Read-Only Mode (Jan 1, 2027)</h2>
+    <div id="countdown1">Loading...</div>
+    <h2>Retirement (Jan 1, 2028)</h2>
+    <div id="countdown2">Loading...</div>
+  </div>
+
+  <script>
+    const countdown1 = document.getElementById('countdown1');
+    const countdown2 = document.getElementById('countdown2');
+    const target1 = new Date('January 1, 2027 00:00:00').getTime();
+    const target2 = new Date('January 1, 2028 00:00:00').getTime();
+
+    function updateCountdowns() {
+      const now = Date.now();
+      [[countdown1, target1, 'Blackboard Original is in Read-Only mode'],
+       [countdown2, target2, 'Blackboard Learn is retired!']
+      ].forEach(([el, target, msg]) => {
+        const dist = target - now;
+        if (dist < 0) {
+          el.textContent = msg;
+        } else {
+          const days    = Math.floor(dist / (1000*60*60*24));
+          const hours   = Math.floor((dist % (1000*60*60*24)) / (1000*60*60));
+          const mins    = Math.floor((dist % (1000*60*60))   / (1000*60));
+          const secs    = Math.floor((dist % (1000*60))      / 1000);
+          el.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
+        }
+      });
+    }
+
+    updateCountdowns();
+    setInterval(updateCountdowns, 1000);
+  </script>
+</body>
+</html>
