@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
+      margin: 0;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -14,75 +16,126 @@
       font-family: Arial, sans-serif;
       text-align: center;
       flex-direction: column;
+      overflow: hidden;
     }
     .container {
       background-color: white;
       padding: 2rem;
       border-radius: 1rem;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       max-width: 400px;
       width: 100%;
     }
     h1 { font-size: 2rem; margin-bottom: 1rem; }
-    h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
-    #countdown1, #countdown2 {
-      font-size: 2.5rem;
-      font-weight: bold;
-      color: #222;
-      margin-bottom: 1rem;
+    h2 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; }
+
+    /* Timer layout */
+    .timer { display: flex; justify-content: center; gap: 0.5rem; margin-top: 0.5rem; }
+    .unit {
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      min-width: 60px;
+      color: #fff;
     }
-    .logos {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-    .logos img {
-      height: 60px;
-      object-fit: contain;
-    }
+    .unit span.value { display: block; font-size: 1.5rem; font-weight: bold; }
+    .unit span.label { display: block; font-size: 0.75rem; text-transform: uppercase; margin-top: 0.25rem; }
+    #timer1 .unit { background: #0066FF; }
+    #timer2 .unit { background: #1C1C1C; }
+
+    /* Spin animation */
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .spin { animation: spin 0.5s linear; }
+
+    .logos { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; }
+    .logos img { height: 60px; object-fit: contain; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 </head>
 <body>
   <div class="logos">
-    <!-- only Blackboard logo now -->
     <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Blackboard_logo.png" alt="Blackboard Logo">
   </div>
-
   <div class="container">
     <h1>Countdown to Blackboard Original Retirement</h1>
     <h2>Read-Only Mode (Jan 1, 2027)</h2>
-    <div id="countdown1">Loading...</div>
+    <div id="timer1" class="timer"></div>
     <h2>Retirement (Jan 1, 2028)</h2>
-    <div id="countdown2">Loading...</div>
+    <div id="timer2" class="timer"></div>
   </div>
-
   <script>
-    const countdown1 = document.getElementById('countdown1');
-    const countdown2 = document.getElementById('countdown2');
-    const target1 = new Date('January 1, 2027 00:00:00').getTime();
-    const target2 = new Date('January 1, 2028 00:00:00').getTime();
-
-    function updateCountdowns() {
+    // Countdown logic
+    const timers = [
+      { el: document.getElementById('timer1'), target: new Date('January 1, 2027').getTime(), msg: 'Blackboard Original is in Read-Only mode' },
+      { el: document.getElementById('timer2'), target: new Date('January 1, 2028').getTime(), msg: 'Blackboard Learn is retired!' }
+    ];
+    function updateTimers() {
       const now = Date.now();
-      [[countdown1, target1, 'Blackboard Original is in Read-Only mode'],
-       [countdown2, target2, 'Blackboard Learn is retired!']
-      ].forEach(([el, target, msg]) => {
-        const dist = target - now;
-        if (dist < 0) {
-          el.textContent = msg;
+      timers.forEach(({el, target, msg}) => {
+        const d = target - now;
+        if (d < 0) {
+          el.innerHTML = `<div class="unit"><span class="value">00</span><span class="label">${msg}</span></div>`;
         } else {
-          const days    = Math.floor(dist / (1000*60*60*24));
-          const hours   = Math.floor((dist % (1000*60*60*24)) / (1000*60*60));
-          const mins    = Math.floor((dist % (1000*60*60))   / (1000*60));
-          const secs    = Math.floor((dist % (1000*60))      / 1000);
-          el.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
+          const days = Math.floor(d/86400000);
+          const hrs  = Math.floor((d%86400000)/3600000);
+          const mins = Math.floor((d%3600000)/60000);
+          const secs = Math.floor((d%60000)/1000);
+          el.innerHTML = `
+            <div class="unit"><span class="value">${String(days).padStart(2,'0')}</span><span class="label">Days</span></div>
+            <div class="unit"><span class="value">${String(hrs).padStart(2,'0')}</span><span class="label">Hours</span></div>
+            <div class="unit"><span class="value">${String(mins).padStart(2,'0')}</span><span class="label">Minutes</span></div>
+            <div class="unit"><span class="value">${String(secs).padStart(2,'0')}</span><span class="label">Seconds</span></div>`;
         }
       });
     }
+    updateTimers(); setInterval(updateTimers,1000);
 
-    updateCountdowns();
-    setInterval(updateCountdowns, 1000);
+    // Floating logo with bounce, spin, confetti, and reset
+    const logo = document.createElement('img');
+    logo.src = 'https://upload.wikimedia.org/wikipedia/commons/a/a1/Blackboard_logo.png';
+    const size = 200;
+    logo.style.position='absolute'; logo.style.width=size+'px'; logo.style.zIndex=1000;
+    document.body.appendChild(logo);
+
+    let x = Math.random()*(innerWidth-size),
+        y = Math.random()*(innerHeight-size),
+        dx = (Math.random()>0.5?1:-1)*2,
+        dy = (Math.random()>0.5?1:-1)*2,
+        resetTimeout;
+
+    function resetLogo() {
+      clearTimeout(resetTimeout);
+      x = Math.random()*(innerWidth-size);
+      y = Math.random()*(innerHeight-size);
+      dx = (Math.random()>0.5?1:-1)*2;
+      dy = (Math.random()>0.5?1:-1)*2;
+      logo.style.left=x+'px'; logo.style.top=y+'px';
+    }
+
+    function cornerEffects(cx, cy) {
+      logo.classList.add('spin');
+      setTimeout(()=>logo.classList.remove('spin'),500);
+      confetti({ particleCount:50, spread:60, origin:{ x:cx, y:cy } });
+      clearTimeout(resetTimeout);
+      resetTimeout = setTimeout(resetLogo, 4000);
+    }
+
+    function bounce() {
+      x+=dx; y+=dy;
+      const left=x<=0, right=x>=innerWidth-size;
+      const top=y<=0, bottom=y>=innerHeight-size;
+      if(left||right) dx=-dx;
+      if(top||bottom) dy=-dy;
+      if((left&&top)||(left&&bottom)||(right&&top)||(right&&bottom)) {
+        cornerEffects((x+size/2)/innerWidth, (y+size/2)/innerHeight);
+      }
+      logo.style.left=x+'px'; logo.style.top=y+'px';
+    }
+
+    setInterval(bounce,16);
+    window.addEventListener('resize',()=>{
+      if(x>innerWidth-size) x=innerWidth-size;
+      if(y>innerHeight-size) y=innerHeight-size;
+    });
   </script>
 </body>
 </html>
